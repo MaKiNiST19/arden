@@ -1,0 +1,373 @@
+.outfitPage {
+  padding: 120px 0 60px;
+  min-height: 80vh;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  color: var(--color-text-secondary);
+  font-size: 1.1rem;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 60px;
+}
+
+@media (max-width: 1024px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Showcase Area - Live Mannequin */
+.showcase {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  position: sticky;
+  top: 100px;
+  display: flex;
+  flex-direction: column;
+}
+
+.mannequinStage {
+  position: relative;
+  width: 100%;
+  height: 600px;
+  margin-bottom: 40px;
+  background: radial-gradient(circle at center, var(--color-bg-tertiary) 0%, var(--color-bg-secondary) 100%);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+}
+
+.mannequinSvg {
+  height: 100%;
+  width: auto;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* Base slot styling - glassmorphism */
+.mannequinSlot {
+  position: absolute;
+  width: 160px;
+  height: 180px;
+  border-radius: var(--radius-lg);
+  background: rgba(10, 10, 10, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.mannequinSlot:hover {
+  transform: scale(1.05);
+  border-color: var(--color-accent);
+  background: rgba(20, 20, 20, 0.6);
+  z-index: 20;
+}
+
+/* Positioning clothing slots relative to the stage (assuming 600px height) */
+/* Adjust left/right to float them slightly off-center for a moodboard look */
+.slot_ust {
+  top: 80px;
+  left: 50%;
+  transform: translateX(-80%);
+}
+.slot_ust:hover { transform: translateX(-80%) scale(1.05); }
+
+.slot_alt {
+  top: 250px;
+  left: 50%;
+  transform: translateX(10%);
+}
+.slot_alt:hover { transform: translateX(10%) scale(1.05); }
+
+.slot_ayakkabi {
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-60%);
+  height: 120px;
+}
+.slot_ayakkabi:hover { transform: translateX(-60%) scale(1.05); }
+
+@media (max-width: 768px) {
+  .mannequinStage { height: 500px; }
+  .mannequinSlot { width: 120px; height: 140px; }
+  .slot_ust { top: 60px; transform: translateX(-90%); }
+  .slot_ust:hover { transform: translateX(-90%) scale(1.05); }
+  .slot_alt { top: 200px; transform: translateX(0%); }
+  .slot_alt:hover { transform: translateX(0%) scale(1.05); }
+  .slot_ayakkabi { bottom: 20px; transform: translateX(-50%); height: 90px; }
+  .slot_ayakkabi:hover { transform: translateX(-50%) scale(1.05); }
+}
+
+.slotEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  font-family: var(--font-display);
+}
+
+.slotPlus {
+  font-size: 2rem;
+  font-weight: 300;
+  margin-bottom: 5px;
+  color: var(--color-accent);
+  opacity: 0.5;
+}
+
+.slotLabel {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.itemPreview {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: calc(var(--radius-lg) - 1px);
+  overflow: hidden;
+}
+
+.itemPreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: lighten; /* helps blend product background nicely */
+  opacity: 0.95;
+}
+
+.removeBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 3;
+  border: none;
+  transition: background 0.2s;
+}
+
+.removeBtn:hover {
+  background: var(--color-error);
+}
+
+.aiLoading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 10, 0.8);
+  backdrop-filter: blur(5px);
+  z-index: 50;
+  color: var(--color-accent);
+  text-align: center;
+  padding: 20px;
+}
+
+.loader {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(201, 169, 110, 0.3);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.aiResultImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  z-index: 40;
+  animation: fadeIn 1s ease-out;
+}
+
+.summary {
+  padding: 30px;
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-lg);
+}
+
+.totalBlock {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+
+.totalPrice {
+  font-size: 1.5rem;
+  color: var(--color-text-primary);
+}
+
+/* Item List */
+.itemList {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.listTitle {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.itemGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card {
+  display: flex;
+  gap: 20px;
+  padding: 15px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.activeCard {
+  border-color: var(--color-accent);
+  background: rgba(201, 169, 110, 0.05);
+}
+
+.cardImg {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.cardContent {
+  flex: 1;
+}
+
+.cardName {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.cardPrice {
+  font-size: 0.9rem;
+  color: var(--color-accent);
+  margin-bottom: 12px;
+}
+
+.cardActions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.wearBtn {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.wearBtn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.wearing {
+  background: var(--color-accent);
+  color: var(--color-bg-primary);
+  border-color: var(--color-accent);
+}
+
+.cardRemove {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.cardRemove:hover {
+  color: var(--color-error);
+}
+
+
+/* Empty State */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  text-align: center;
+  padding: 20px;
+}
+
+.emptyIcon {
+  font-size: 5rem;
+  margin-bottom: 20px;
+}
+
+.empty h1 {
+  font-family: var(--font-display);
+  margin-bottom: 10px;
+}
+
+.empty p {
+  color: var(--color-text-secondary);
+  margin-bottom: 30px;
+}

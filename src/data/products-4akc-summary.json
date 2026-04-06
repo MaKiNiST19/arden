@@ -1,0 +1,39 @@
+{
+  "totalProducts": 1278,
+  "categories": {
+    "Takım Elbise": 244,
+    "AKSESUAR": 80,
+    "T-Shirt": 45,
+    "Pantolon": 130,
+    "Ayakkabı": 173,
+    "Ceket": 131,
+    "Gömlek": 173,
+    "takıkm": 1,
+    "Smokin": 20,
+    "Mont": 67,
+    "Mont&Kaban": 17,
+    "aksesj": 1,
+    "aksesa": 1,
+    "Kaban & Palto": 16,
+    "T-Shirt & Triko": 1,
+    "T-Shirt&Triko": 28,
+    "Mendil": 17,
+    "Aksesuar": 15,
+    "Kravat": 22,
+    "Kategorisiz": 1,
+    "Triko": 46,
+    "Hırka": 21,
+    "Yelek": 15,
+    "EN YENİLER": 1,
+    "Kemer": 7,
+    "KLASİK AYAKKABI": 1,
+    "İndirimli Ürünler": 1,
+    "Eşofman & Şort": 3
+  },
+  "priceRange": {
+    "min": 129,
+    "max": 21999
+  },
+  "fetchedAt": "2026-04-06T19:36:24.307Z",
+  "source": "https://4akc.com"
+}
