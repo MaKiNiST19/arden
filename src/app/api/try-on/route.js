@@ -5,8 +5,8 @@ const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
 });
 
-// IDM-VTON modeli — sanal giydirme için en iyi model
-const VTON_MODEL = "cuuupid/idm-vton:0513734a452173b8173e907e3a59d19a36266e55b48528559432bd21c7d7e985";
+// IDM-VTON Resmi Modeli
+const VTON_MODEL = "yisol/idm-vton:03e94a86f9f257fa9506689d020e2417a80b032d84715bd7d8f343833d7b41e2";
 
 // Varsayılan manken görseli (full body, stüdyo çekimi)
 const DEFAULT_MODEL_IMAGE = "https://images.unsplash.com/photo-1542596768-5d1d21f1cf98?auto=format&fit=crop&q=80&w=768&h=1024";
@@ -31,17 +31,19 @@ export async function POST(req) {
     let absoluteGarmentImage = garmentImage;
     if (garmentImage && garmentImage.startsWith('/')) {
       const host = req.headers.get('host');
-      const protocol = host.includes('localhost') ? 'http' : 'https';
+      const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? 'http' : 'https';
       absoluteGarmentImage = `${protocol}://${host}${garmentImage}`;
     }
 
     // Manken görseli için de mutlak URL kontrolü
     let absoluteModelImage = modelImage || DEFAULT_MODEL_IMAGE;
-    if (modelImage && modelImage.startsWith('/')) {
+    if (modelImage && typeof modelImage === 'string' && modelImage.startsWith('/')) {
       const host = req.headers.get('host');
-      const protocol = host.includes('localhost') ? 'http' : 'https';
+      const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? 'http' : 'https';
       absoluteModelImage = `${protocol}://${host}${modelImage}`;
     }
+
+    console.log(`AI İsteği Gönderiliyor: ${category} - Model: ${absoluteModelImage}`);
 
     const output = await replicate.run(VTON_MODEL, {
       input: {
@@ -55,24 +57,36 @@ export async function POST(req) {
       },
     });
 
-    // Replicate output, tek bir URL string veya URL arrayi olabilir
+    // Replicate output extraction
     let imageUrl = Array.isArray(output) ? output[0] : output;
-
-    // Eğer output bir obje ise (bazı modellerde öyle olur), içindeki URL'i bulmaya çalış
     if (imageUrl && typeof imageUrl === 'object') {
       imageUrl = imageUrl.url || imageUrl.image || Object.values(imageUrl).find(v => typeof v === 'string' && v.startsWith('http'));
     }
 
-    if (!imageUrl) {
-      return NextResponse.json({ error: 'Model görsel üretemedi.' }, { status: 500 });
+    if (!imageUrl || typeof imageUrl !== 'string') {
+      console.error("Replicate Geçersiz Çıktı:", output);
+      return NextResponse.json({ 
+        error: 'Model görsel üretemedi.', 
+        details: 'API geçerli bir resim URL\'si döndürmedi.',
+        raw: output 
+      }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, imageUrl });
 
   } catch (error) {
     console.error("VTON Hatası:", error);
+    
+    // Detaylı hata mesajı ayıklama
+    const errorMessage = error.message || 'Virtual Try-On işlemi başarısız.';
+    const errorDetails = error.response ? await error.response.text() : errorMessage;
+
     return NextResponse.json(
-      { error: 'Virtual Try-On işlemi başarısız.', details: error.message },
+      { 
+        error: 'Virtual Try-On işlemi başarısız.', 
+        details: errorMessage,
+        fullError: errorDetails
+      },
       { status: 500 }
     );
   }

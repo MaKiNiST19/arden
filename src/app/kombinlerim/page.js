@@ -66,6 +66,8 @@ export default function OutfitPage() {
     });
   };
 
+  const [aiProgress, setAiProgress] = useState('');
+
   const handleTryOn = async () => {
     const { ust, alt } = activeOutfit;
     if (!ust && !alt) {
@@ -73,59 +75,66 @@ export default function OutfitPage() {
     }
     
     setIsGeneratingAI(true);
-    setAiImageUrl(null); // Önceki sonucu temizle
+    setAiImageUrl(null);
+    setAiProgress('Hazırlanıyor...');
 
     try {
       let currentResultImageUrl = null;
 
-      // 1. Üst Giyim Deneme (Eğer seçiliyse)
+      // 1. Üst Giyim Deneme
       if (ust) {
+        setAiProgress('1/2: Üst giyim deneniyor...');
         const res = await fetch('/api/try-on', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             garmentImage: ust.image,
             category: 'ust',
-            modelImage: null // İlk adımda varsayılan mankeni kullan
+            modelImage: null
           })
         });
+        
         const data = await res.json();
         if (data.success && typeof data.imageUrl === 'string') {
           currentResultImageUrl = data.imageUrl;
         } else {
-          throw new Error(data.error || "Üst giyim denemesi başarısız oldu.");
+          const detailMsg = data.fullError || data.details || data.error;
+          throw new Error(`Üst Giyim Hatası: ${detailMsg}`);
         }
       }
 
-      // 2. Alt Giyim Deneme (Eğer seçiliyse)
-      // Eğer üst giyim denendiyse, onun üzerine ekle. Yoksa direkt mankene ekle.
+      // 2. Alt Giyim Deneme
       if (alt) {
+        setAiProgress(ust ? '2/2: Alt giyim deneniyor...' : '1/1: Alt giyim deneniyor...');
         const res = await fetch('/api/try-on', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             garmentImage: alt.image,
             category: 'alt',
-            modelImage: currentResultImageUrl // Varsa üst giyimli mankeni, yoksa varsayılanı kullanır
+            modelImage: currentResultImageUrl // Eğer üst giyim denendiyse onun üzerine ekle
           })
         });
+        
         const data = await res.json();
         if (data.success && typeof data.imageUrl === 'string') {
           currentResultImageUrl = data.imageUrl;
         } else {
-          throw new Error(data.error || "Alt giyim denemesi başarısız oldu.");
+          const detailMsg = data.fullError || data.details || data.error;
+          throw new Error(`Alt Giyim Hatası: ${detailMsg}`);
         }
       }
 
-      // Sonucu göster
       if (currentResultImageUrl) {
         setAiImageUrl(currentResultImageUrl);
       }
       
     } catch (e) {
-      alert("Yapay Zeka Hatası: " + e.message);
+      console.error("AI Hatası detayları:", e);
+      alert("Yapay Zeka İşlemi Başarısız:\n\n" + e.message + "\n\nLütfen API anahtarınızın ve bakiyenizin yeterli olduğundan emin olun.");
     } finally {
       setIsGeneratingAI(false);
+      setAiProgress('');
     }
   };
 
@@ -232,7 +241,7 @@ export default function OutfitPage() {
               {isGeneratingAI && (
                 <div className={styles.aiLoading}>
                   <div className={styles.loader}></div>
-                  <p>Yapay Zeka Modeli Giydiriyor...<br/>(Lütfen 15-30 sn bekleyin)</p>
+                  <p>{aiProgress}<br/>(Lütfen bekleyin...)</p>
                 </div>
               )}
 
