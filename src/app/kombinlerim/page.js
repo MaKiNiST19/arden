@@ -14,7 +14,8 @@ export default function OutfitPage() {
   const [activeOutfit, setActiveOutfit] = useState({
     ust: null,
     alt: null,
-    ayakkabi: null
+    ayakkabi: null,
+    aksesuar: null
   });
   const [aiImageUrl, setAiImageUrl] = useState(null);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -136,7 +137,7 @@ export default function OutfitPage() {
                   </svg>
 
                   {/* Clothing Slots */}
-                  {['ust', 'alt', 'ayakkabi'].map(cat => (
+                  {['ust', 'alt', 'ayakkabi', 'aksesuar'].map(cat => (
                     <div key={cat} className={`${styles.mannequinSlot} ${styles[`slot_${cat}`]}`} style={{display: isGeneratingAI ? 'none' : 'flex'}}>
                       {activeOutfit[cat] ? (
                         <div className={styles.itemPreview}>
@@ -146,7 +147,9 @@ export default function OutfitPage() {
                       ) : (
                         <div className={styles.slotEmpty}>
                           <span className={styles.slotPlus}>+</span>
-                          <span className={styles.slotLabel}>{cat === 'ust' ? 'Üst' : cat === 'alt' ? 'Alt' : 'Ayakkabı'}</span>
+                          <span className={styles.slotLabel}>
+                            {cat === 'ust' ? 'Üst' : cat === 'alt' ? 'Alt' : cat === 'ayakkabi' ? 'Ayakkabı' : 'Aksesuar'}
+                          </span>
                         </div>
                       )}
                     </div>

@@ -117,15 +117,26 @@
 }
 .slot_ayakkabi:hover { transform: translateX(-60%) scale(1.05); }
 
+.slot_aksesuar {
+  top: 150px;
+  left: 50%;
+  transform: translateX(60%);
+  width: 140px;
+  height: 140px;
+}
+.slot_aksesuar:hover { transform: translateX(60%) scale(1.05); }
+
 @media (max-width: 768px) {
   .mannequinStage { height: 500px; }
   .mannequinSlot { width: 120px; height: 140px; }
-  .slot_ust { top: 60px; transform: translateX(-90%); }
-  .slot_ust:hover { transform: translateX(-90%) scale(1.05); }
-  .slot_alt { top: 200px; transform: translateX(0%); }
-  .slot_alt:hover { transform: translateX(0%) scale(1.05); }
-  .slot_ayakkabi { bottom: 20px; transform: translateX(-50%); height: 90px; }
-  .slot_ayakkabi:hover { transform: translateX(-50%) scale(1.05); }
+  .slot_ust { top: 40px; transform: translateX(-95%); }
+  .slot_ust:hover { transform: translateX(-95%) scale(1.05); }
+  .slot_alt { top: 200px; transform: translateX(10%); }
+  .slot_alt:hover { transform: translateX(10%) scale(1.05); }
+  .slot_ayakkabi { bottom: 20px; transform: translateX(-90%); height: 90px; width: 100px; }
+  .slot_ayakkabi:hover { transform: translateX(-90%) scale(1.05); }
+  .slot_aksesuar { top: 350px; transform: translateX(20%); width: 100px; height: 100px; }
+  .slot_aksesuar:hover { transform: translateX(20%) scale(1.05); }
 }
 
 .slotEmpty {

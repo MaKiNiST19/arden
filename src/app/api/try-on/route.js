@@ -6,7 +6,7 @@ const replicate = new Replicate({
 });
 
 // IDM-VTON modeli — sanal giydirme için en iyi model
-const VTON_MODEL = "cuuupid/idm-vton:c871bb9b046c1584f06cf6cb4e2e5b0e2bbab7ad04d16450a98b1e0b4b450940";
+const VTON_MODEL = "yisol/idm-vton:03e94a86f9f257fa9506689d020e2417a80b032d84715bd7d8f343833d7b41e2";
 
 // Varsayılan manken görseli (beyaz arka plan, düz duruşlu erkek model)
 const DEFAULT_MODEL_IMAGE = "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=768&h=1024";
@@ -27,10 +27,26 @@ export async function POST(req) {
       );
     }
 
+    // Replicate'in görsele erişebilmesi için URL'nin mutlak olması gerekir (http...)
+    let absoluteGarmentImage = garmentImage;
+    if (garmentImage && garmentImage.startsWith('/')) {
+      const host = req.headers.get('host');
+      const protocol = host.includes('localhost') ? 'http' : 'https';
+      absoluteGarmentImage = `${protocol}://${host}${garmentImage}`;
+    }
+
+    // Manken görseli için de mutlak URL kontrolü
+    let absoluteModelImage = modelImage || DEFAULT_MODEL_IMAGE;
+    if (modelImage && modelImage.startsWith('/')) {
+      const host = req.headers.get('host');
+      const protocol = host.includes('localhost') ? 'http' : 'https';
+      absoluteModelImage = `${protocol}://${host}${modelImage}`;
+    }
+
     const output = await replicate.run(VTON_MODEL, {
       input: {
-        human_img: modelImage || DEFAULT_MODEL_IMAGE,
-        garm_img: garmentImage,
+        human_img: absoluteModelImage,
+        garm_img: absoluteGarmentImage,
         garment_des: category === 'alt' ? 'lower body garment' : category === 'ayakkabi' ? 'shoes' : 'upper body garment',
         category: category === 'alt' ? 'lower_body' : category === 'ayakkabi' ? 'lower_body' : 'upper_body',
         crop: false,

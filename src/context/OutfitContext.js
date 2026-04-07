@@ -9,6 +9,7 @@ function getSlotFromCategory(cat) {
   const c = cat.toLowerCase();
   if (['pantolon', 'şort', 'sort', 'alt-giyim', 'alt giyim', 'jean', 'esofman-alti'].some(k => c.includes(k))) return 'alt';
   if (['ayakkabi', 'ayakkabı', 'bot', 'sneaker', 'terlik', 'sandalet'].some(k => c.includes(k))) return 'ayakkabi';
+  if (['aksesuar', 'taki', 'saat', 'gozluk', 'şapka', 'sapka', 'kemer', 'çanta', 'canta'].some(k => c.includes(k))) return 'aksesuar';
   return 'ust';
 }
 
