@@ -68,6 +68,44 @@ export default function OutfitPage() {
 
   const [aiProgress, setAiProgress] = useState('');
 
+  // Yardımcı fonksiyon: Tahmin durumunu sorgula
+  const pollPrediction = async (predictionId, stepLabel) => {
+    let attempts = 0;
+    const maxAttempts = 40; // Yaklaşık 2-3 dakika
+    
+    while (attempts < maxAttempts) {
+      const res = await fetch('/api/try-on', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ predictionId })
+      });
+      
+      const data = await res.json();
+      
+      if (data.status === 'succeeded') {
+        return data.imageUrl;
+      }
+      
+      if (data.status === 'failed' || data.status === 'canceled') {
+        throw new Error(data.error || "Yapay zeka işlemi başarısız oldu.");
+      }
+      
+      // Duruma göre mesaj güncelle
+      const statusMap = {
+        'starting': 'Başlatılıyor...',
+        'processing': 'İşleniyor...',
+        'queued': 'Sırada bekliyor...'
+      };
+      setAiProgress(`${stepLabel}: ${statusMap[data.status] || 'Hazırlanıyor...'}`);
+      
+      // 3 saniye bekle
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      attempts++;
+    }
+    
+    throw new Error("İşlem zaman aşımına uğradı. Lütfen tekrar deneyin.");
+  };
+
   const handleTryOn = async () => {
     const { ust, alt } = activeOutfit;
     if (!ust && !alt) {
@@ -81,9 +119,9 @@ export default function OutfitPage() {
     try {
       let currentResultImageUrl = null;
 
-      // 1. Üst Giyim Deneme
+      // 1. Üst Giyim
       if (ust) {
-        setAiProgress('1/2: Üst giyim deneniyor...');
+        setAiProgress('1/2: Üst giyim başlatılıyor...');
         const res = await fetch('/api/try-on', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -95,33 +133,32 @@ export default function OutfitPage() {
         });
         
         const data = await res.json();
-        if (data.success && typeof data.imageUrl === 'string') {
-          currentResultImageUrl = data.imageUrl;
+        if (data.success && data.predictionId) {
+          currentResultImageUrl = await pollPrediction(data.predictionId, '1/2: Üst Giyim');
         } else {
-          const detailMsg = data.fullError || data.details || data.error;
-          throw new Error(`Üst Giyim Hatası: ${detailMsg}`);
+          throw new Error(data.error || "Üst giyim başlatılamadı.");
         }
       }
 
-      // 2. Alt Giyim Deneme
+      // 2. Alt Giyim
       if (alt) {
-        setAiProgress(ust ? '2/2: Alt giyim deneniyor...' : '1/1: Alt giyim deneniyor...');
+        const stepLabel = ust ? '2/2: Alt Giyim' : '1/1: Alt Giyim';
+        setAiProgress(`${stepLabel} başlatılıyor...`);
         const res = await fetch('/api/try-on', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             garmentImage: alt.image,
             category: 'alt',
-            modelImage: currentResultImageUrl // Eğer üst giyim denendiyse onun üzerine ekle
+            modelImage: currentResultImageUrl
           })
         });
         
         const data = await res.json();
-        if (data.success && typeof data.imageUrl === 'string') {
-          currentResultImageUrl = data.imageUrl;
+        if (data.success && data.predictionId) {
+          currentResultImageUrl = await pollPrediction(data.predictionId, stepLabel);
         } else {
-          const detailMsg = data.fullError || data.details || data.error;
-          throw new Error(`Alt Giyim Hatası: ${detailMsg}`);
+          throw new Error(data.error || "Alt giyim başlatılamadı.");
         }
       }
 
@@ -130,8 +167,8 @@ export default function OutfitPage() {
       }
       
     } catch (e) {
-      console.error("AI Hatası detayları:", e);
-      alert("Yapay Zeka İşlemi Başarısız:\n\n" + e.message + "\n\nLütfen API anahtarınızın ve bakiyenizin yeterli olduğundan emin olun.");
+      console.error("AI Polling Hatası:", e);
+      alert("İşlem Sırasında Hata:\n\n" + e.message);
     } finally {
       setIsGeneratingAI(false);
       setAiProgress('');
