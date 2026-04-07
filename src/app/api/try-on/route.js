@@ -1,32 +1,58 @@
 import { NextResponse } from 'next/server';
+import Replicate from 'replicate';
+
+const replicate = new Replicate({
+  auth: process.env.REPLICATE_API_TOKEN,
+});
+
+// IDM-VTON modeli — sanal giydirme için en iyi model
+const VTON_MODEL = "cuuupid/idm-vton:c871bb9b046c1584f06cf6cb4e2e5b0e2bbab7ad04d16450a98b1e0b4b450940";
+
+// Varsayılan manken görseli (beyaz arka plan, düz duruşlu erkek model)
+const DEFAULT_MODEL_IMAGE = "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=768&h=1024";
 
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { garmentImage, category } = body;
+    const { garmentImage, category, modelImage } = body;
 
     if (!garmentImage) {
       return NextResponse.json({ error: 'Kıyafet görseli gerekli' }, { status: 400 });
     }
 
-    // --- DEMO MODU AÇIK ---
-    // Replicate API kredisiz test yapabilmeniz için yapay zeka işlem süresini taklit ediyoruz.
-    // Başarılı bir Sanal Giydirme (VTON) sonucunun nasıl göründüğünü simüle ediyoruz.
-    
-    // 3 saniyelik sahte yükleme süresi (Gerçek yapay zeka 15-20 sn sürer)
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-    // Kategoriye göre mükemmel giyinmiş gerçekçi bir model fotoğrafı döndürüyoruz
-    let demoImageUrl = "https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&q=80&w=800"; // Şık bir kazak/üst
-    
-    if (category === 'alt') {
-       demoImageUrl = "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?auto=format&fit=crop&q=80&w=800"; // Şık bir pantolon odaklı
+    if (!process.env.REPLICATE_API_TOKEN) {
+      return NextResponse.json(
+        { error: 'Replicate API token ayarlanmamış. .env.local dosyasını kontrol edin.' },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json({ success: true, imageUrl: demoImageUrl });
+    const output = await replicate.run(VTON_MODEL, {
+      input: {
+        human_img: modelImage || DEFAULT_MODEL_IMAGE,
+        garm_img: garmentImage,
+        garment_des: category === 'alt' ? 'lower body garment' : category === 'ayakkabi' ? 'shoes' : 'upper body garment',
+        category: category === 'alt' ? 'lower_body' : category === 'ayakkabi' ? 'lower_body' : 'upper_body',
+        crop: false,
+        seed: 42,
+        steps: 30,
+      },
+    });
+
+    // Replicate output, tek bir URL string veya URL arrayi olabilir
+    const imageUrl = Array.isArray(output) ? output[0] : output;
+
+    if (!imageUrl) {
+      return NextResponse.json({ error: 'Model görsel üretemedi.' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, imageUrl });
 
   } catch (error) {
-    console.error("Demo VTON Hatası:", error);
-    return NextResponse.json({ error: 'İşlem başarısız oldu.', details: error.message }, { status: 500 });
+    console.error("VTON Hatası:", error);
+    return NextResponse.json(
+      { error: 'Virtual Try-On işlemi başarısız.', details: error.message },
+      { status: 500 }
+    );
   }
 }
