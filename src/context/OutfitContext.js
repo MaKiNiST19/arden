@@ -3,6 +3,15 @@ import { createContext, useContext, useState, useCallback, useEffect } from 'rea
 
 const OutfitContext = createContext();
 
+// Kategori slug veya adından manken slot'unu belirle
+function getSlotFromCategory(cat) {
+  if (!cat) return 'ust';
+  const c = cat.toLowerCase();
+  if (['pantolon', 'şort', 'sort', 'alt-giyim', 'alt giyim', 'jean', 'esofman-alti'].some(k => c.includes(k))) return 'alt';
+  if (['ayakkabi', 'ayakkabı', 'bot', 'sneaker', 'terlik', 'sandalet'].some(k => c.includes(k))) return 'ayakkabi';
+  return 'ust';
+}
+
 export function OutfitProvider({ children }) {
   const [outfitItems, setOutfitItems] = useState([]);
   const [savedOutfits, setSavedOutfits] = useState([]);
@@ -32,7 +41,7 @@ export function OutfitProvider({ children }) {
         slug: product.slug,
         price: product.price,
         image: product.images ? product.images[0] : product.image,
-        category: product.outfitCategory || 'ust',
+        category: product.outfitCategory || getSlotFromCategory(product.category || product.productType || ''),
         color: product.colors?.[0]?.name || '',
       }];
     });
