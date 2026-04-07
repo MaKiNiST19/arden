@@ -67,30 +67,63 @@ export default function OutfitPage() {
   };
 
   const handleTryOn = async () => {
-    const garmentToTry = activeOutfit.ust || activeOutfit.alt;
-    if (!garmentToTry) {
-        return alert("Lütfen sanal giydirme için bir Üst veya Alt seçin.");
+    const { ust, alt } = activeOutfit;
+    if (!ust && !alt) {
+        return alert("Lütfen sanal giydirme için en az bir Üst veya Alt seçin.");
     }
     
     setIsGeneratingAI(true);
+    setAiImageUrl(null); // Önceki sonucu temizle
+
     try {
-      const response = await fetch('/api/try-on', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          garmentImage: garmentToTry.image,
-          category: garmentToTry.category || 'ust',
-        })
-      });
-      
-      const data = await response.json();
-      if (data.success) {
-        setAiImageUrl(data.imageUrl);
-      } else {
-        alert("AI Yapılandırma Hatası: Lütfen API anahtarınızın doğru olduğundan emin olun. Detay: " + (data.details || data.error));
+      let currentResultImageUrl = null;
+
+      // 1. Üst Giyim Deneme (Eğer seçiliyse)
+      if (ust) {
+        const res = await fetch('/api/try-on', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            garmentImage: ust.image,
+            category: 'ust',
+            modelImage: null // İlk adımda varsayılan mankeni kullan
+          })
+        });
+        const data = await res.json();
+        if (data.success && typeof data.imageUrl === 'string') {
+          currentResultImageUrl = data.imageUrl;
+        } else {
+          throw new Error(data.error || "Üst giyim denemesi başarısız oldu.");
+        }
       }
+
+      // 2. Alt Giyim Deneme (Eğer seçiliyse)
+      // Eğer üst giyim denendiyse, onun üzerine ekle. Yoksa direkt mankene ekle.
+      if (alt) {
+        const res = await fetch('/api/try-on', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            garmentImage: alt.image,
+            category: 'alt',
+            modelImage: currentResultImageUrl // Varsa üst giyimli mankeni, yoksa varsayılanı kullanır
+          })
+        });
+        const data = await res.json();
+        if (data.success && typeof data.imageUrl === 'string') {
+          currentResultImageUrl = data.imageUrl;
+        } else {
+          throw new Error(data.error || "Alt giyim denemesi başarısız oldu.");
+        }
+      }
+
+      // Sonucu göster
+      if (currentResultImageUrl) {
+        setAiImageUrl(currentResultImageUrl);
+      }
+      
     } catch (e) {
-      alert("Sunucuya ulaşılamadı.");
+      alert("Yapay Zeka Hatası: " + e.message);
     } finally {
       setIsGeneratingAI(false);
     }
