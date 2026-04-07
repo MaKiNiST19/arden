@@ -4,12 +4,14 @@ import { createContext, useContext, useState, useCallback, useEffect } from 'rea
 const OutfitContext = createContext();
 
 // Kategori slug veya adından manken slot'unu belirle
-function getSlotFromCategory(cat) {
-  if (!cat) return 'ust';
-  const c = cat.toLowerCase();
-  if (['pantolon', 'şort', 'sort', 'alt-giyim', 'alt giyim', 'jean', 'esofman-alti'].some(k => c.includes(k))) return 'alt';
-  if (['ayakkabi', 'ayakkabı', 'bot', 'sneaker', 'terlik', 'sandalet'].some(k => c.includes(k))) return 'ayakkabi';
-  if (['aksesuar', 'taki', 'saat', 'gozluk', 'şapka', 'sapka', 'kemer', 'çanta', 'canta'].some(k => c.includes(k))) return 'aksesuar';
+export function getSlotFromCategory(item) {
+  if (!item) return 'ust';
+  const name = (item.name || '').toLowerCase();
+  const cat = (item.category || item.productType || '').toLowerCase();
+  
+  if ([cat, name].some(c => ['pantolon', 'şort', 'sort', 'alt-giyim', 'alt giyim', 'jean', 'esofman-alti', 'pijama alt'].some(k => c.includes(k)))) return 'alt';
+  if ([cat, name].some(c => ['ayakkabi', 'ayakkabı', 'bot', 'sneaker', 'terlik', 'sandalet'].some(k => c.includes(k)))) return 'ayakkabi';
+  if ([cat, name].some(c => ['aksesuar', 'taki', 'saat', 'gozluk', 'şapka', 'sapka', 'kemer', 'çanta', 'canta', 'bileklik', 'kolye'].some(k => c.includes(k)))) return 'aksesuar';
   return 'ust';
 }
 
@@ -20,7 +22,17 @@ export function OutfitProvider({ children }) {
   useEffect(() => {
     const saved = localStorage.getItem('arden_outfit_items');
     const savedList = localStorage.getItem('arden_saved_outfits');
-    if (saved) { try { setOutfitItems(JSON.parse(saved)); } catch {} }
+    if (saved) { 
+      try { 
+        const items = JSON.parse(saved);
+        // Eski kayıtları yeni kategori mantığına göre güncelle
+        const updatedItems = items.map(item => ({
+          ...item,
+          category: getSlotFromCategory(item)
+        }));
+        setOutfitItems(updatedItems); 
+      } catch {} 
+    }
     if (savedList) { try { setSavedOutfits(JSON.parse(savedList)); } catch {} }
   }, []);
 
@@ -42,7 +54,7 @@ export function OutfitProvider({ children }) {
         slug: product.slug,
         price: product.price,
         image: product.images ? product.images[0] : product.image,
-        category: product.outfitCategory || getSlotFromCategory(product.category || product.productType || ''),
+        category: getSlotFromCategory(product),
         color: product.colors?.[0]?.name || '',
       }];
     });
