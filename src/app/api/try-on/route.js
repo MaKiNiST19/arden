@@ -56,7 +56,12 @@ export async function POST(req) {
     });
 
     // Replicate output, tek bir URL string veya URL arrayi olabilir
-    const imageUrl = Array.isArray(output) ? output[0] : output;
+    let imageUrl = Array.isArray(output) ? output[0] : output;
+
+    // Eğer output bir obje ise (bazı modellerde öyle olur), içindeki URL'i bulmaya çalış
+    if (imageUrl && typeof imageUrl === 'object') {
+      imageUrl = imageUrl.url || imageUrl.image || Object.values(imageUrl).find(v => typeof v === 'string' && v.startsWith('http'));
+    }
 
     if (!imageUrl) {
       return NextResponse.json({ error: 'Model görsel üretemedi.' }, { status: 500 });

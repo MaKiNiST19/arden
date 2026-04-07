@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useOutfit } from '@/context/OutfitContext';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/utils';
+import { Download, Camera, ShoppingBag, Trash2 } from 'lucide-react';
 import styles from './outfit.module.css';
 
 export default function OutfitPage() {
@@ -95,6 +96,92 @@ export default function OutfitPage() {
     }
   };
 
+  const handleSaveAsImage = async () => {
+    // Create a canvas to draw the outfit summary
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 1080;
+    canvas.height = 1350; // Instagram story/portrait size
+
+    // Background
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Title
+    ctx.fillStyle = '#c9a96e';
+    ctx.font = 'bold 48px serif';
+    ctx.fillText('ARDEN MEN WEAR', 60, 100);
+    ctx.font = '24px sans-serif';
+    ctx.fillText('Premium Sanal Kombin', 60, 140);
+
+    // Filter active items
+    const items = Object.values(activeOutfit).filter(Boolean);
+    
+    // Draw mannequin or AI image if exists
+    try {
+      const displayUrl = aiImageUrl || DEFAULT_MODEL_IMAGE;
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = displayUrl;
+      });
+
+      // Maintain aspect ratio to fit in a box
+      const maxWidth = 960;
+      const maxHeight = 800;
+      let w = img.width;
+      let h = img.height;
+      const ratio = Math.min(maxWidth / w, maxHeight / h);
+      w *= ratio;
+      h *= ratio;
+
+      ctx.drawImage(img, (canvas.width - w) / 2, 200, w, h);
+    } catch (e) {
+      console.error("Görsel çizilemedi:", e);
+      ctx.fillStyle = '#333';
+      ctx.fillRect(100, 200, 880, 800);
+      ctx.fillStyle = '#fff';
+      ctx.fillText('Görsel Yüklenemedi', 400, 600);
+    }
+
+    // List products at bottom
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 32px sans-serif';
+    ctx.fillText('Kombin Detayları:', 60, 1100);
+    
+    items.forEach((item, index) => {
+      ctx.font = '24px sans-serif';
+      ctx.fillStyle = '#aaa';
+      ctx.fillText(`• ${item.name}`, 80, 1150 + (index * 40));
+      ctx.fillStyle = '#c9a96e';
+      const priceText = formatPrice(item.price);
+      ctx.fillText(priceText, 800, 1150 + (index * 40));
+    });
+
+    // Total
+    ctx.strokeStyle = '#c9a96e';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(60, 1310);
+    ctx.lineTo(1020, 1310);
+    ctx.stroke();
+    
+    ctx.font = 'bold 36px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.fillText('Toplam:', 60, 1280);
+    ctx.fillStyle = '#c9a96e';
+    ctx.fillText(formatPrice(totalPrice), 800, 1280);
+
+    // Download
+    const link = document.createElement('a');
+    link.download = `arden-kombin-${Date.now()}.jpg`;
+    link.href = canvas.toDataURL('image/jpeg', 0.9);
+    link.click();
+  };
+
   const totalPrice = Object.values(activeOutfit).reduce((sum, item) => sum + (item ? item.price : 0), 0);
 
   return (
@@ -177,7 +264,14 @@ export default function OutfitPage() {
                   onClick={buyOutfit}
                   disabled={!activeOutfit.ust && !activeOutfit.alt && !activeOutfit.ayakkabi}
                 >
-                  Kombini Sepete Ekle
+                  <ShoppingBag size={20} style={{marginRight: '8px'}} /> Kombini Sepete Ekle
+                </button>
+                <button 
+                  className="btn btn--outline btn--full btn--lg" 
+                  onClick={handleSaveAsImage}
+                  style={{marginTop: '10px', borderColor: 'rgba(255,255,255,0.2)'}}
+                >
+                  <Camera size={20} style={{marginRight: '8px'}} /> Kombini Fotoğraf Olarak Kaydet
                 </button>
               </div>
             </div>
@@ -202,7 +296,9 @@ export default function OutfitPage() {
                         >
                           {isActive ? 'Kombinde ✓' : 'Kombine Ekle +'}
                         </button>
-                        <button className={styles.cardRemove} onClick={() => removeFromOutfit(item.id)}>Kaldır</button>
+                        <button className={styles.cardRemove} onClick={() => removeFromOutfit(item.id)}>
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
                   </div>

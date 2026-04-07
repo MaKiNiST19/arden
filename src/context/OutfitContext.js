@@ -1,19 +1,9 @@
 'use client';
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
-const OutfitContext = createContext();
+import { getSlotFromCategory } from '@/lib/utils';
 
-// Kategori slug veya adından manken slot'unu belirle
-export function getSlotFromCategory(item) {
-  if (!item) return 'ust';
-  const name = (item.name || '').toLowerCase();
-  const cat = (item.category || item.productType || '').toLowerCase();
-  
-  if ([cat, name].some(c => ['pantolon', 'şort', 'sort', 'alt-giyim', 'alt giyim', 'jean', 'esofman-alti', 'pijama alt'].some(k => c.includes(k)))) return 'alt';
-  if ([cat, name].some(c => ['ayakkabi', 'ayakkabı', 'bot', 'sneaker', 'terlik', 'sandalet'].some(k => c.includes(k)))) return 'ayakkabi';
-  if ([cat, name].some(c => ['aksesuar', 'taki', 'saat', 'gozluk', 'şapka', 'sapka', 'kemer', 'çanta', 'canta', 'bileklik', 'kolye'].some(k => c.includes(k)))) return 'aksesuar';
-  return 'ust';
-}
+const OutfitContext = createContext();
 
 export function OutfitProvider({ children }) {
   const [outfitItems, setOutfitItems] = useState([]);
