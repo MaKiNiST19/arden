@@ -7,6 +7,8 @@ import { formatPrice } from '@/lib/utils';
 import { Download, Camera, ShoppingBag, Trash2 } from 'lucide-react';
 import styles from './outfit.module.css';
 
+const DEFAULT_MODEL_IMAGE = "https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&q=80&w=768&h=1024";
+
 export default function OutfitPage() {
   const { outfitItems, removeFromOutfit } = useOutfit();
   const { addItem } = useCart();
@@ -20,13 +22,32 @@ export default function OutfitPage() {
   });
   const [aiImageUrl, setAiImageUrl] = useState(null);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [aiProgress, setAiProgress] = useState('');
+
+  // Yardımcı fonksiyon: Ürün kategorisini normalize et
+  const normalizeCategory = (categoryName) => {
+    if (!categoryName) return 'ust';
+    const cat = categoryName.toLowerCase();
+    
+    if (cat.includes('pantolon') || cat.includes('şort') || cat.includes('eşofman')) {
+      return 'alt';
+    }
+    if (cat.includes('ayakkabı') || cat.includes('klasik ayakkabi')) {
+      return 'ayakkabi';
+    }
+    if (cat.includes('aksesuar') || cat.includes('mendil') || cat.includes('kravat') || cat.includes('kemer')) {
+      return 'aksesuar';
+    }
+    // Geri kalanlar (Gömlek, T-Shirt, Ceket, Mont, Takım Elbise vb.) üst kabul edilir
+    return 'ust';
+  };
 
   // Automatically select the first item of each category on load
   useEffect(() => {
     if (outfitItems.length > 0) {
       const newActive = { ...activeOutfit };
       outfitItems.forEach(item => {
-        const cat = item.category || 'ust';
+        const cat = normalizeCategory(item.category);
         if (!newActive[cat]) {
           newActive[cat] = item;
         }
@@ -49,7 +70,7 @@ export default function OutfitPage() {
   }
 
   const wearItem = (item) => {
-    const cat = item.category || 'ust';
+    const cat = normalizeCategory(item.category);
     setActiveOutfit(prev => ({
       ...prev,
       [cat]: item
@@ -66,7 +87,6 @@ export default function OutfitPage() {
     });
   };
 
-  const [aiProgress, setAiProgress] = useState('');
 
   // Yardımcı fonksiyon: Tahmin durumunu sorgula
   const pollPrediction = async (predictionId, stepLabel) => {

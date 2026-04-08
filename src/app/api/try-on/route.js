@@ -8,8 +8,8 @@ const replicate = new Replicate({
 // IDM-VTON Doğrulanmış Çalışan Versiyon (cuuupid tarafından barındırılan)
 const VTON_MODEL = "cuuupid/idm-vton:0513734a452173b8173e907e3a59d19a36266e55b48528559432bd21c7d7e985";
 
-// Varsayılan manken görseli (full body, stüdyo çekimi)
-const DEFAULT_MODEL_IMAGE = "https://images.unsplash.com/photo-1542596768-5d1d21f1cf98?auto=format&fit=crop&q=80&w=768&h=1024";
+// Varsayılan manken görseli (Erkek model, full body, stüdyo çekimi)
+const DEFAULT_MODEL_IMAGE = "https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&q=80&w=768&h=1024";
 
 export async function POST(req) {
   try {
