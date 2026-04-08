@@ -7,7 +7,7 @@ import { formatPrice } from '@/lib/utils';
 import { Download, Camera, ShoppingBag, Trash2 } from 'lucide-react';
 import styles from './outfit.module.css';
 
-const DEFAULT_MODEL_IMAGE = "https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&q=80&w=768&h=1024";
+const DEFAULT_MODEL_IMAGE = "/assets/manken.jpg";
 
 export default function OutfitPage() {
   const { outfitItems, removeFromOutfit } = useOutfit();

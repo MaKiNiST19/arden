@@ -8,8 +8,8 @@ const replicate = new Replicate({
 // IDM-VTON Doğrulanmış Çalışan Versiyon (cuuupid tarafından barındırılan)
 const VTON_MODEL = "cuuupid/idm-vton:0513734a452173b8173e907e3a59d19a36266e55b48528559432bd21c7d7e985";
 
-// Varsayılan manken görseli (Erkek model, full body, stüdyo çekimi)
-const DEFAULT_MODEL_IMAGE = "https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&q=80&w=768&h=1024";
+// Varsayılan manken görseli (Kullanıcının yüklediği manken)
+const DEFAULT_MODEL_IMAGE = "/assets/manken.jpg";
 
 export async function POST(req) {
   try {
@@ -51,7 +51,7 @@ export async function POST(req) {
       return NextResponse.json({ error: 'API token bulunamadı. Lütfen çevre değişkenlerini kontrol edin.' }, { status: 500 });
     }
 
-    // URL Mutlaklaştırma
+    // URL Mutlaklaştırma (Kıyafet)
     let absoluteGarmentImage = garmentImage;
     if (garmentImage && garmentImage.startsWith('/')) {
       const host = req.headers.get('host');
@@ -59,11 +59,12 @@ export async function POST(req) {
       absoluteGarmentImage = `${protocol}://${host}${garmentImage}`;
     }
 
+    // URL Mutlaklaştırma (Manken)
     let absoluteModelImage = modelImage || DEFAULT_MODEL_IMAGE;
-    if (modelImage && typeof modelImage === 'string' && modelImage.startsWith('/')) {
+    if (absoluteModelImage && typeof absoluteModelImage === 'string' && absoluteModelImage.startsWith('/')) {
       const host = req.headers.get('host');
       const protocol = host.includes('localhost') || host.includes('127.0.0.1') ? 'http' : 'https';
-      absoluteModelImage = `${protocol}://${host}${modelImage}`;
+      absoluteModelImage = `${protocol}://${host}${absoluteModelImage}`;
     }
 
     console.log(`Yeni AI Tahmini Başlatılıyor (cuuupid): ${category}`);
