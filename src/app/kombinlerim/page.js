@@ -24,30 +24,12 @@ export default function OutfitPage() {
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [aiProgress, setAiProgress] = useState('');
 
-  // Yardımcı fonksiyon: Ürün kategorisini normalize et
-  const normalizeCategory = (categoryName) => {
-    if (!categoryName) return 'ust';
-    const cat = categoryName.toLowerCase();
-    
-    if (cat.includes('pantolon') || cat.includes('şort') || cat.includes('eşofman')) {
-      return 'alt';
-    }
-    if (cat.includes('ayakkabı') || cat.includes('klasik ayakkabi')) {
-      return 'ayakkabi';
-    }
-    if (cat.includes('aksesuar') || cat.includes('mendil') || cat.includes('kravat') || cat.includes('kemer')) {
-      return 'aksesuar';
-    }
-    // Geri kalanlar (Gömlek, T-Shirt, Ceket, Mont, Takım Elbise vb.) üst kabul edilir
-    return 'ust';
-  };
-
   // Automatically select the first item of each category on load
   useEffect(() => {
     if (outfitItems.length > 0) {
-      const newActive = { ...activeOutfit };
+      const newActive = { ust: null, alt: null, ayakkabi: null, aksesuar: null };
       outfitItems.forEach(item => {
-        const cat = normalizeCategory(item.category);
+        const cat = item.category || 'ust';
         if (!newActive[cat]) {
           newActive[cat] = item;
         }
@@ -70,7 +52,7 @@ export default function OutfitPage() {
   }
 
   const wearItem = (item) => {
-    const cat = normalizeCategory(item.category);
+    const cat = item.category || 'ust';
     setActiveOutfit(prev => ({
       ...prev,
       [cat]: item
