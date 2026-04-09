@@ -111,7 +111,7 @@ export default function OutfitPage() {
   const handleTryOn = async () => {
     const { ust, alt } = activeOutfit;
     if (!ust && !alt) {
-        return alert("Lütfen sanal giydirme için en az bir Üst veya Alt seçin.");
+        return alert("Lütfen sanal giydirme için en az bir Üst veya Alt seçin.\n\nNot: Ayakkabı ve aksesuar şu an AI giydirmeyi desteklemiyor.");
     }
     
     setIsGeneratingAI(true);
@@ -340,6 +340,11 @@ export default function OutfitPage() {
                 >
                   {isGeneratingAI ? '✨ Hazırlanıyor...' : '✨ Üzerimde Nasıl Durur?'}
                 </button>
+                {!isGeneratingAI && (
+                  <p style={{fontSize:'11px', color:'rgba(255,255,255,0.4)', textAlign:'center', margin:'-6px 0 4px'}}>
+                    Üst ve alt giyim desteklenir · Ayakkabı/aksesuar yakında
+                  </p>
+                )}
                 <button 
                   className="btn btn--primary btn--full btn--lg" 
                   onClick={buyOutfit}

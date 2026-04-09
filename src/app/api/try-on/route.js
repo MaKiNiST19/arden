@@ -70,16 +70,20 @@ export async function POST(req) {
     console.log(`Yeni AI Tahmini Başlatılıyor (cuuupid): ${category}`);
 
     try {
+      const isLowerBody = category === 'alt';
       const prediction = await replicate.predictions.create({
         version: VTON_MODEL.split(":")[1],
         input: {
           human_img: absoluteModelImage,
           garm_img: absoluteGarmentImage,
-          garment_des: category === 'alt' ? 'lower body garment' : category === 'ayakkabi' ? 'shoes' : 'upper body garment',
-          category: category === 'alt' ? 'lower_body' : category === 'ayakkabi' ? 'lower_body' : 'upper_body',
-          crop: false,
+          garment_des: isLowerBody ? 'lower body garment, pants, trousers' : 'upper body garment',
+          category: isLowerBody ? 'lower_body' : 'upper_body',
+          // crop: true prevents body distortion when image is not exactly 3:4
+          crop: true,
+          // force_dc uses DressCode model for lower body — significantly better results
+          force_dc: isLowerBody,
           seed: 42,
-          steps: 30,
+          steps: 40,
         },
       });
 
